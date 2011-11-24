@@ -261,6 +261,8 @@ class Picasa
     puts auth_header
     puts self.token
     album = data
+    puts data
+    puts response
     #album = create_album_from_xml(data)
     return album
   end
