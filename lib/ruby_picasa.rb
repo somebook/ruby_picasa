@@ -256,7 +256,9 @@ class Picasa
     headers = {"Content-Type" => "application/atom+xml", "Authorization" => "GoogleLogin auth=#{self.token}"}
 
     response, data = http.post(uri.path, createAlbumRequestXml, headers)
-    puts self.user.user
+    puts url
+    puts createAlbumRequestXml
+    puts headers
     puts self.token
     album = response
     #album = create_album_from_xml(data)
