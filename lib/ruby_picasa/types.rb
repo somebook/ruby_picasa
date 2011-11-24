@@ -168,6 +168,7 @@ module RubyPicasa
 
     # The current page of albums associated to the user.
     def albums
+      puts "albums"
       entries
     end
   end
