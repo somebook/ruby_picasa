@@ -257,7 +257,8 @@ class Picasa
 
     response, data = http.post(uri.path, createAlbumRequestXml, headers)
     
-    album = create_album_from_xml(data)
+    album = data
+    #album = create_album_from_xml(data)
     return album
   end
   
