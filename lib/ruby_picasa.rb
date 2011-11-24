@@ -222,6 +222,45 @@ class Picasa
     options = make_options(:album_id, album_id_or_url, options)
     get(options)
   end
+
+  def create_album(options = {})
+    title = options[:title].nil? ? "" : options[:title]
+    summary = options[:summary].nil? ? "" : options[:summary]
+    location = options[:location].nil? ? "" : options[:location]
+    access = options[:access].nil? ? "public" : options[:access]
+    commentable = options[:commentable].nil? ? "true" : options[:commentable].to_s
+    keywords = options[:keywords].nil? ? "" : options[:keywords]
+    time_i = (Time.now).to_i
+    
+    createAlbumRequestXml = "<entry xmlns='http://www.w3.org/2005/Atom'
+                  xmlns:media='http://search.yahoo.com/mrss/'
+                  xmlns:gphoto='http://schemas.google.com/photos/2007'>
+                    <title type='text'>#{title}</title>
+                    <summary type='text'>#{summary}</summary>
+                    <gphoto:location>#{location}</gphoto:location>
+                    <gphoto:access>#{access}</gphoto:access>
+                    <gphoto:commentingEnabled>#{commentable}</gphoto:commentingEnabled>
+                    <gphoto:timestamp>#{time_i}</gphoto:timestamp>
+                    <media:group>
+                      <media:keywords>#{keywords}</media:keywords>
+                    </media:group>
+                    <category scheme='http://schemas.google.com/g/2005#kind'
+                      term='http://schemas.google.com/photos/2007#album'></category>
+                  </entry>"
+    
+    url = "http://picasaweb.google.com/data/feed/api/user/#{self.picasa_session.user_id}"
+
+    uri = URI.parse(url)
+    http = Net::HTTP.new(uri.host, uri.port)
+  
+    headers = {"Content-Type" => "application/atom+xml", "Authorization" => "GoogleLogin auth=#{self.user.user}"}
+
+    response, data = http.post(uri.path, createAlbumRequestXml, headers)
+    
+    album = data
+    #album = create_album_from_xml(data)
+    return album
+  end
   
   # Retrieve a RubyPicasa::Comment record.
   def comments(user_id, photo_entry, options = {})
