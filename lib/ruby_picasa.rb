@@ -248,17 +248,16 @@ class Picasa
                       term='http://schemas.google.com/photos/2007#album'></category>
                   </entry>"
     
-    url = "http://picasaweb.google.com/data/feed/api/user/#{self.picasa_session.user_id}"
+    url = "http://picasaweb.google.com/data/feed/api/user/#{self.user.user}"
 
     uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
   
-    headers = {"Content-Type" => "application/atom+xml", "Authorization" => "GoogleLogin auth=#{self.user.user}"}
+    headers = {"Content-Type" => "application/atom+xml", "Authorization" => "GoogleLogin auth=#{self.token}"}
 
     response, data = http.post(uri.path, createAlbumRequestXml, headers)
     
-    album = data
-    #album = create_album_from_xml(data)
+    album = create_album_from_xml(data)
     return album
   end
   
