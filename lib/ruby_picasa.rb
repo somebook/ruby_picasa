@@ -253,12 +253,12 @@ class Picasa
     uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
   
-    headers = {"Content-Type" => "application/atom+xml", "Authorization" => "GoogleLogin auth=#{self.token}"}
+    #headers = {"Content-Type" => "application/atom+xml", "Authorization" => "GoogleLogin auth=#{self.token}"}
 
-    response, data = http.post(uri.path, createAlbumRequestXml, headers)
+    response, data = http.post(uri.path, createAlbumRequestXml, auth_header)
     puts url
     puts createAlbumRequestXml
-    puts headers
+    puts auth_header
     puts self.token
     album = response
     #album = create_album_from_xml(data)
