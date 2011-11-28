@@ -256,15 +256,10 @@ class Picasa
     headers = {"Content-Type" => "application/atom+xml", "Authorization" => %{AuthSub token="#{ token }"}}
 
     response, data = http.post(uri.path, createAlbumRequestXml, headers)
-    puts url
-    puts createAlbumRequestXml
-    puts auth_header
-    puts self.token
     album = data
-    puts data
-    puts response
     #album = create_album_from_xml(data)
-    return album
+    # return album
+    response
   end
   
   # Retrieve a RubyPicasa::Comment record.
