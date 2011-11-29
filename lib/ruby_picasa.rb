@@ -255,11 +255,50 @@ class Picasa
   
     headers = {"Content-Type" => "application/atom+xml", "Authorization" => %{AuthSub token="#{ token }"}}
 
-    response, data = http.post(uri.path, createAlbumRequestXml, headers)
-    album = data
-    #album = create_album_from_xml(data)
-    # return album
-    response
+    response = http.post(uri.path, createAlbumRequestXml, headers)
+    if response.class == Net::HTTPCreated
+      return (Objectify::Xml.first_element(response.body) > 'id').children[0].content.match(/albumid\/(\d*)/)[1]
+    else
+      return nil
+    end
+  end
+  
+  def post_photo(image_data = nil, options = {})
+    summary = options[:summary] == nil ? "" : options[:summary]
+    album_name = options[:album] == nil ? "" : options[:album]
+    album_id = options[:album_id] == nil ? "" : options[:album_id]
+    local_file_name = options[:local_file_name] == nil ? "" : options[:local_file_name]
+    title = options[:title] == nil ? local_file_name : options[:title]
+
+    if(image_data == nil)
+      return nil
+      # Or throw an exception in next update
+    end
+
+    if(album_id != "")
+      url = "http://picasaweb.google.com/data/feed/api/user/#{self.user.user}/albumid/#{album_id}"
+    else
+      url = "http://picasaweb.google.com/data/feed/api/user/#{self.user.user}/album/#{album_name}"
+    end
+
+    uri = URI.parse(url)
+    http = Net::HTTP.new(uri.host, uri.port)
+
+    headers = {"Content-Type" => "image/jpeg", "Authorization" => %{AuthSub token="#{ token }"}, "Transfer-Encoding" => "chunked"}
+
+    response = http.post(uri.path, image_data, headers)
+    ap response.body
+
+    if response.class == Net::HTTPCreated
+      xml = Objectify::Xml.first_element(response.body)
+      return {
+        :url => xml.search('//*[@width]', xml.namespaces)[0].attr('url'),
+        :width => xml.search('//*[@width]', xml.namespaces)[1].attr('width').to_i,
+        :height => xml.search('//*[@width]', xml.namespaces)[1].attr('height').to_i
+      }
+    else
+      return nil
+    end
   end
   
   # Retrieve a RubyPicasa::Comment record.
