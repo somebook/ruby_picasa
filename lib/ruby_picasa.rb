@@ -264,14 +264,13 @@ class Picasa
   end
   
   def delete_album(album_id)
-    url = "http://picasaweb.google.com/data/feed/api/user/#{self.user.user}/albumid/#{album_id}"
+    url = "http://picasaweb.google.com/data/entry/api/user/#{self.user.user}/albumid/#{album_id}"
     
     uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
     
-    headers = {"Authorization" => %{AuthSub token="#{ token }"}}
-    
-    response = http.delete(uri.path, headers)
+    headers = {"Authorization" => %{AuthSub token="#{ token }"}, "If-Match" => "*"}
+    response, data = http.delete(uri.path, headers)
 
     if(response.code == "200")
       return true
