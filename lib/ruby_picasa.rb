@@ -263,6 +263,47 @@ class Picasa
     end
   end
   
+  def update_album(options = {})
+    title = options[:title].nil? ? "" : options[:title]
+    summary = options[:summary].nil? ? "" : options[:summary]
+    album_id = options[:album_id].nil? ? "" : options[:album_id]
+    location = options[:location].nil? ? "" : options[:location]
+    access = "public"#options[:access].nil? ? "public" : options[:access]
+    keywords = options[:keywords].nil? ? "" : options[:keywords]
+    time_i = (Time.now).to_i
+    
+    updateAlbumRequestXml = "<entry xmlns='http://www.w3.org/2005/Atom'
+                  xmlns:media='http://search.yahoo.com/mrss/'
+                  xmlns:gphoto='http://schemas.google.com/photos/2007'>
+                    <title type='text'>#{title}</title>
+                    <summary type='text'>#{summary}</summary>
+                    <gphoto:location>#{location}</gphoto:location>
+                    <gphoto:access>#{access}</gphoto:access>
+                    <gphoto:timestamp>#{time_i}</gphoto:timestamp>
+                    <media:group>
+                      <media:keywords>#{keywords}</media:keywords>
+                    </media:group>
+                    <category scheme='http://schemas.google.com/g/2005#kind'
+                      term='http://schemas.google.com/photos/2007#album'></category>
+                  </entry>"
+    
+    url = "http://picasaweb.google.com/data/entry/api/user/#{self.user.user}/albumid/#{album_id}"
+    ap url
+    ap updateAlbumRequestXml
+    uri = URI.parse(url)
+    http = Net::HTTP.new(uri.host, uri.port)
+  
+    headers = {"Content-Type" => "application/atom+xml", "Authorization" => %{AuthSub token="#{ token }"}, "If-Match" => "*"}
+
+    response = http.put(uri.path, updateAlbumRequestXml, headers)
+    ap response
+    if response.code == 200
+      return true
+    else
+      return false
+    end
+  end
+  
   def delete_album(album_id)
     url = "http://picasaweb.google.com/data/entry/api/user/#{self.user.user}/albumid/#{album_id}"
     
