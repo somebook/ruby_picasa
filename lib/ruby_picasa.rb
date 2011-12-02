@@ -255,6 +255,8 @@ class Picasa
     headers = {"Content-Type" => "application/atom+xml", "Authorization" => %{AuthSub token="#{ token }"}}
 
     response = http.post(uri.path, createAlbumRequestXml, headers)
+    ap response.code
+    ap response.body
     if response.class == Net::HTTPCreated
       return (Objectify::Xml.first_element(response.body) > 'id').children[0].content.match(/albumid\/(\d*)/)[1]
     else
