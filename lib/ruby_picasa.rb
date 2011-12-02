@@ -330,9 +330,6 @@ class Picasa
       return nil
       # Or throw an exception in next update
     end
-    ap self
-    ap self.user
-    ap self.user.user
     if(album_id != "")
       url = "http://picasaweb.google.com/data/feed/api/user/#{self.user.user}/albumid/#{album_id}"
     else
