@@ -342,7 +342,6 @@ class Picasa
     headers = {"Content-Type" => "image/jpeg", "Authorization" => %{AuthSub token="#{ token }"}, "Transfer-Encoding" => "chunked"}
 
     response = http.post(uri.path, image_data, headers)
-    ap response.body
 
     if response.class == Net::HTTPCreated
       xml = Objectify::Xml.first_element(response.body)
