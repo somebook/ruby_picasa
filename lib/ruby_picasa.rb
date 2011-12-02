@@ -249,9 +249,6 @@ class Picasa
                   </entry>"
     
     url = "http://picasaweb.google.com/data/feed/api/user/#{self.user.user}"
-    ap self
-    ap self.user
-    ap self.user.user
     uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
   
