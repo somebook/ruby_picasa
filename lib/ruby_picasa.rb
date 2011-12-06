@@ -339,10 +339,10 @@ class Picasa
     uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
 
-    headers = {"Content-Type" => "image/jpeg", "Authorization" => %{AuthSub token="#{ token }"}, "Transfer-Encoding" => "chunked"}
+    headers = {"Content-Type" => "image/jpeg", "Authorization" => %{AuthSub token="#{ token }"}, "Transfer-Encoding" => "chunked", "Slug" => title}
 
     response = http.post(uri.path, image_data, headers)
-
+    ap response
     if response.class == Net::HTTPCreated
       xml = Objectify::Xml.first_element(response.body)
       return {
