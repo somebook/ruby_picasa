@@ -342,10 +342,11 @@ class Picasa
     headers = {"Content-Type" => "image/jpeg", "Authorization" => %{AuthSub token="#{ token }"}, "Transfer-Encoding" => "chunked", "Slug" => title}
 
     response = http.post(uri.path, image_data, headers)
-    ap response
+    
     if response.class == Net::HTTPCreated
       xml = Objectify::Xml.first_element(response.body)
       return {
+        :id => (xml > 'id')[0].children[0].content.match(/photoid\/(\d*)/)[1]
         :url => xml.search('//*[@width]', xml.namespaces)[0].attr('url'),
         :width => xml.search('//*[@width]', xml.namespaces)[1].attr('width').to_i,
         :height => xml.search('//*[@width]', xml.namespaces)[1].attr('height').to_i
