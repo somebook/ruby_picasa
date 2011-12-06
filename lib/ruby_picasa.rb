@@ -367,9 +367,6 @@ class Picasa
     
     headers = {"Authorization" => %{AuthSub token="#{ token }"}, "If-Match" => "*"}
     response, data = http.delete(uri.path, headers)
-    ap url
-    ap response.body
-    ap response
     if(response.code == "200")
       return true
     else
