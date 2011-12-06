@@ -360,7 +360,7 @@ class Picasa
     photo_id = options[:photo_id] == nil ? "" : options[:photo_id]
     album_id = options[:album_id] == nil ? "" : options[:album_id]
     
-    url = "http://picasaweb.google.com/data/feed/api/user/#{self.user.user}/albumid/#{album_id}/photoid/#{photo_id}"
+    url = "http://picasaweb.google.com/data/entry/api/user/#{self.user.user}/albumid/#{album_id}/photoid/#{photo_id}"
     
     uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
