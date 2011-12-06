@@ -356,6 +356,25 @@ class Picasa
     end
   end
   
+  def delete_photo(options = {})
+    photo_id = options[:photo_id] == nil ? "" : options[:photo_id]
+    album_id = options[:album_id] == nil ? "" : options[:album_id]
+    
+    url = "http://picasaweb.google.com/data/feed/api/user/#{self.user.user}/albumid/#{album_id}/photoid/#{photo_id}"
+    
+    uri = URI.parse(url)
+    http = Net::HTTP.new(uri.host, uri.port)
+    
+    headers = {"Authorization" => %{AuthSub token="#{ token }"}, "If-Match" => "*"}
+    response, data = http.delete(uri.path, headers)
+
+    if(response.code == "200")
+      return true
+    else
+      return false
+    end
+  end
+  
   # Retrieve a RubyPicasa::Comment record.
   def comments(user_id, photo_entry, options = {})
     options[:user_id] = user_id
