@@ -260,7 +260,11 @@ class Picasa
     uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
   
-    headers = {"Content-Type" => "application/atom+xml", "Authorization" => %{AuthSub token="#{ token }"}}
+    headers = {
+      "Content-Type" => "application/atom+xml", 
+      "Authorization" => %{AuthSub token="#{ token }"}, 
+      "access_token" => token
+    }
 
     response = http.post(uri.path, createAlbumRequestXml, headers)
     if response.class == Net::HTTPCreated
@@ -300,7 +304,12 @@ class Picasa
     uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
   
-    headers = {"Content-Type" => "application/atom+xml", "Authorization" => %{AuthSub token="#{ token }"}, "If-Match" => "*"}
+    headers = {
+      "Content-Type" => "application/atom+xml", 
+      "Authorization" => %{AuthSub token="#{ token }"}, 
+      "If-Match" => "*",
+      "access_token" => token
+    }
 
     response = http.put(uri.path, updateAlbumRequestXml, headers)
     ap response
@@ -317,7 +326,12 @@ class Picasa
     uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
     
-    headers = {"Authorization" => %{AuthSub token="#{ token }"}, "If-Match" => "*"}
+    headers = {
+      "Authorization" => %{AuthSub token="#{ token }"}, 
+      "If-Match" => "*",
+      "access_token" => token
+    }
+
     response, data = http.delete(uri.path, headers)
 
     if(response.code == "200")
@@ -347,7 +361,13 @@ class Picasa
     uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
 
-    headers = {"Content-Type" => "image/jpeg", "Authorization" => %{AuthSub token="#{ token }"}, "Transfer-Encoding" => "chunked", "Slug" => title}
+    headers = {
+      "Content-Type" => "image/jpeg", 
+      "Authorization" => %{AuthSub token="#{ token }"}, 
+      "Transfer-Encoding" => "chunked", 
+      "Slug" => title,
+      "access_token" => token
+    }
 
     response = http.post(uri.path, image_data, headers)
     
@@ -373,7 +393,11 @@ class Picasa
     uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
     
-    headers = {"Authorization" => %{AuthSub token="#{ token }"}, "If-Match" => "*"}
+    headers = {
+      "Authorization" => %{AuthSub token="#{ token }"}, 
+      "If-Match" => "*",
+      "access_token" => token
+    }
     response, data = http.delete(uri.path, headers)
     if(response.code == "200")
       return true
