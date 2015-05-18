@@ -198,23 +198,27 @@ class Picasa
   # The AuthSub token currently in use.
   attr_reader :token
 
-  def initialize(token)
-    @token = token
+  def initialize(refresh_token)
+    @refresh_token = refresh_token
     @request_cache = {}
   end
 
   # Attempt to upgrade the current AuthSub token to a permanent one. This only
   # works if the Picasa session is initialized with a single use token.
   def authorize_token!
-    http = Net::HTTP.new("www.google.com", 443)
-    http.use_ssl = true
-    response = http.get('/accounts/AuthSubSessionToken', auth_header)
-    token = response.body.scan(/Token=(.*)/).flatten.compact.first
-    if token
-      @token = token
-    else
+    begin
+      headers = {
+          "token_uri" => "https://www.googleapis.com/oauth2/v3/token",
+          "refresh_token" => @refresh_token
+      }
+
+      response = RestClient.post "https://developers.google.com/oauthplayground/refreshAccessToken", headers.to_json, content_type: :json
+
+      @token = JSON.parse(response)["access_token"]
+    rescue
       raise RubyPicasa::PicasaTokenError, 'The request to upgrade to a session token failed.'
     end
+
     @token
   end
 
@@ -454,15 +458,12 @@ class Picasa
   # Returns the raw xml from Picasa. See the Picasa.path method for valid
   # options.
   def xml(options = {})
-    http = Net::HTTP.new(Picasa.host, 80)
-    path = Picasa.path(options)
-    response = http.get(path, auth_header)
-    if response.code =~ /20[01]/
-      response.body
-    end
+    url = "https://" + Picasa.host + Picasa.path(options)
+    response = RestClient.get(url, auth_header)
+    return response if response.code == 200
   end
 
-  private
+  # private
 
   # If the value parameter is a hash, treat it as the options hash, otherwise
   # insert the value into the hash with the key specified.
@@ -489,7 +490,8 @@ class Picasa
   # Returns the header data needed to make AuthSub requests.
   def auth_header
     if token
-      { "Authorization" => %{AuthSub token="#{ token }"} }
+      { "Authorization" => %{AuthSub token="#{ token }"},
+        "access_token" => token }
     else
       {}
     end
