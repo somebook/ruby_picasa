@@ -58,15 +58,23 @@ class Picasa
       session = request_session ? '1' : '0'
       secure = secure ? '1' : '0'
       return_to_url = CGI.escape(return_to_url)
-      url = authsub_url || 'http://www.google.com/accounts/AuthSubRequest'
-      "#{ url }?scope=http%3A%2F%2F#{ host }%2Fdata%2F&session=#{ session }&secure=#{ secure }&next=#{ return_to_url }"
+
+      oauth2_url = "https://accounts.google.com/o/oauth2/auth?"
+                   "redirect_uri=#{return_to_url}"
+                   "&response_type=code"
+                   "&client_id=363793298712-bescboa3tr86qcvutmibum2hnohp12o7.apps.googleusercontent.com"
+                   "&scope=https%3A%2F%2Fpicasaweb.google.com%2Fdata%2F"
+                   "&approval_prompt=force"
+                   "&access_type=offline"
+
+      url = authsub_url || oauth2_url
     end
 
     # Takes a Rails request object and extracts the token from it. This would
     # happen in the action that is pointed to by the return_to_url argument
     # when the authorization_url is created.
     def token_from_request(request)
-      if token = request.parameters['token']
+      if token = request.parameters['access_token']
         return token
       else
         raise RubyPicasa::PicasaTokenError, 'No Picasa authorization token was found.'
@@ -74,7 +82,7 @@ class Picasa
     end
 
     def token_in_request?(request)
-      request.parameters['token']
+      request.parameters['access_token']
     end
 
     # Takes a Rails request object as in token_from_request, then makes the
