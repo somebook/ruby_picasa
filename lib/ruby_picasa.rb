@@ -85,6 +85,20 @@ class Picasa
       request.parameters['access_token']
     end
 
+    def code_to_refresh_token(code)
+      headers = {
+        "token_uri" => "https://www.googleapis.com/oauth2/v3/token",
+        "code" => code
+      }
+
+      response = RestClient.post("https://developers.google.com/oauthplayground/exchangeAuthCode", headers.to_json, content_type: :json)
+
+      result = JSON.parse(response)
+
+      @token = result["access_token"]
+      return result["refresh_token"]
+    end
+
     # Takes a Rails request object as in token_from_request, then makes the
     # token authorization request to produce the permanent token. This will
     # only work if request_session was true when you created the
@@ -201,6 +215,8 @@ class Picasa
   def initialize(refresh_token)
     @refresh_token = refresh_token
     @request_cache = {}
+    
+    authorize_token!
   end
 
   # Attempt to upgrade the current AuthSub token to a permanent one. This only
