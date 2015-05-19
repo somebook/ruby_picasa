@@ -283,14 +283,13 @@ class Picasa
                       term='http://schemas.google.com/photos/2007#album'></category>
                   </entry>"
     
-    url = "http://picasaweb.google.com/data/feed/api/user/#{self.user.user}"
+    url = "http://picasaweb.google.com/data/feed/api/user/#{self.user.user}?access_token=#{token}"
     uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
   
     headers = {
       "Content-Type" => "application/atom+xml", 
-      "Authorization" => %{AuthSub token="#{ token }"}, 
-      "access_token" => token
+      "Authorization" => %{AuthSub token="#{ token }"}
     }
 
     response = http.post(uri.path, createAlbumRequestXml, headers)
@@ -325,7 +324,7 @@ class Picasa
                       term='http://schemas.google.com/photos/2007#album'></category>
                   </entry>"
     
-    url = "http://picasaweb.google.com/data/entry/api/user/#{self.user.user}/albumid/#{album_id}"
+    url = "http://picasaweb.google.com/data/entry/api/user/#{self.user.user}/albumid/#{album_id}?access_token=#{token}"
     ap url
     ap updateAlbumRequestXml
     uri = URI.parse(url)
@@ -334,8 +333,7 @@ class Picasa
     headers = {
       "Content-Type" => "application/atom+xml", 
       "Authorization" => %{AuthSub token="#{ token }"}, 
-      "If-Match" => "*",
-      "access_token" => token
+      "If-Match" => "*"
     }
 
     response = http.put(uri.path, updateAlbumRequestXml, headers)
@@ -348,15 +346,14 @@ class Picasa
   end
   
   def delete_album(album_id)
-    url = "http://picasaweb.google.com/data/entry/api/user/#{self.user.user}/albumid/#{album_id}"
+    url = "http://picasaweb.google.com/data/entry/api/user/#{self.user.user}/albumid/#{album_id}?access_token=#{token}"
     
     uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
     
     headers = {
       "Authorization" => %{AuthSub token="#{ token }"}, 
-      "If-Match" => "*",
-      "access_token" => token
+      "If-Match" => "*"
     }
 
     response, data = http.delete(uri.path, headers)
@@ -380,9 +377,9 @@ class Picasa
       # Or throw an exception in next update
     end
     if(album_id != "")
-      url = "http://picasaweb.google.com/data/feed/api/user/#{self.user.user}/albumid/#{album_id}"
+      url = "http://picasaweb.google.com/data/feed/api/user/#{self.user.user}/albumid/#{album_id}?access_token=#{token}"
     else
-      url = "http://picasaweb.google.com/data/feed/api/user/#{self.user.user}/album/#{album_name}"
+      url = "http://picasaweb.google.com/data/feed/api/user/#{self.user.user}/album/#{album_name}?access_token=#{token}"
     end
 
     uri = URI.parse(url)
@@ -392,8 +389,7 @@ class Picasa
       "Content-Type" => "image/jpeg", 
       "Authorization" => %{AuthSub token="#{ token }"}, 
       "Transfer-Encoding" => "chunked", 
-      "Slug" => title,
-      "access_token" => token
+      "Slug" => title
     }
 
     response = http.post(uri.path, image_data, headers)
@@ -415,15 +411,14 @@ class Picasa
     photo_id = options[:photo_id] == nil ? "" : options[:photo_id]
     album_id = options[:album_id] == nil ? "" : options[:album_id]
     
-    url = "http://picasaweb.google.com/data/entry/api/user/#{self.user.user}/albumid/#{album_id}/photoid/#{photo_id}"
+    url = "http://picasaweb.google.com/data/entry/api/user/#{self.user.user}/albumid/#{album_id}/photoid/#{photo_id}?access_token=#{token}"
     
     uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
     
     headers = {
       "Authorization" => %{AuthSub token="#{ token }"}, 
-      "If-Match" => "*",
-      "access_token" => token
+      "If-Match" => "*"
     }
     response, data = http.delete(uri.path, headers)
     if(response.code == "200")
@@ -513,8 +508,7 @@ class Picasa
   # Returns the header data needed to make AuthSub requests.
   def auth_header
     if token
-      { "Authorization" => %{AuthSub token="#{ token }"},
-        "access_token" => token }
+      { "Authorization" => %{AuthSub token="#{ token }"} }
     else
       {}
     end
@@ -577,7 +571,7 @@ class Picasa
         when /#photo$/
           RubyPicasa::Search.new(xml, self)
         else
-          if feed_href && (feed_href.starts_with? 'http://picasaweb.google.com/data/feed/api/all')
+          if feed_href && (feed_href.starts_with? "http://picasaweb.google.com/data/feed/api/all?access_token=#{token}")
             RubyPicasa::Search.new(xml, self)
           else
             RubyPicasa::Photo.new(xml, self)
