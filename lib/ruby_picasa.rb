@@ -49,23 +49,16 @@ end
 #   end
 #
 class Picasa
-  class << self
+  class << self     
+
     # The user must be redirected to this address to authorize the application
     # to access their Picasa account. The token_from_request and
     # authorize_request methods can be used to handle the resulting redirect
     # from Picasa.
-    def authorization_url(return_to_url, request_session = true, secure = false, authsub_url = nil)
-      session = request_session ? '1' : '0'
-      secure = secure ? '1' : '0'
+    def authorization_url(return_to_url, client_id, authsub_url = nil)
       return_to_url = CGI.escape(return_to_url)
 
-      oauth2_url = "https://accounts.google.com/o/oauth2/auth?"
-                   "redirect_uri=#{return_to_url}"
-                   "&response_type=code"
-                   "&client_id=363793298712-bescboa3tr86qcvutmibum2hnohp12o7.apps.googleusercontent.com"
-                   "&scope=https%3A%2F%2Fpicasaweb.google.com%2Fdata%2F"
-                   "&approval_prompt=force"
-                   "&access_type=offline"
+      oauth2_url = "https://accounts.google.com/o/oauth2/auth?redirect_uri=#{return_to_url}&response_type=code&client_id=#{client_id}&scope=https%3A%2F%2Fpicasaweb.google.com%2Fdata%2F&approval_prompt=force&access_type=offline"
 
       url = authsub_url || oauth2_url
     end
@@ -85,13 +78,19 @@ class Picasa
       request.parameters['access_token']
     end
 
-    def code_to_refresh_token(code)
-      headers = {
-        "token_uri" => "https://www.googleapis.com/oauth2/v3/token",
-        "code" => code
+    def code_to_refresh_token(code, client_id, client_secret, redirect_uri)
+      headers = {        
+        "code" => CGI.escape(code),
+        "client_id" => client_id,
+        "client_secret" => client_secret,
+        "redirect_uri" => CGI.escape(redirect_uri),
+        "grant_type" => "authorization_code"
       }
 
-      response = RestClient.post("https://developers.google.com/oauthplayground/exchangeAuthCode", headers.to_json, content_type: :json)
+      options = headers.map{ |k, v| "#{k}=#{v}" }.join('&')
+      url = "https://www.googleapis.com/oauth2/v3/token?#{options}"
+
+      response = RestClient.post url, {}
 
       result = JSON.parse(response)
 
@@ -210,11 +209,14 @@ class Picasa
   end
 
   # The AuthSub token currently in use.
-  attr_reader :token
+  attr_reader :refresh_token, :token
 
-  def initialize(refresh_token)
+  def initialize(refresh_token, client_id, client_secret)
     @refresh_token = refresh_token
     @request_cache = {}
+
+    @client_id = client_id
+    @client_secret = client_secret
     
     authorize_token!
   end
@@ -222,20 +224,25 @@ class Picasa
   # Attempt to upgrade the current AuthSub token to a permanent one. This only
   # works if the Picasa session is initialized with a single use token.
   def authorize_token!
-    begin
+    # begin
       headers = {
-          "token_uri" => "https://www.googleapis.com/oauth2/v3/token",
-          "refresh_token" => @refresh_token
+        "client_id" => @client_id,
+        "client_secret" => @client_secret,
+        "refresh_token" => @refresh_token,
+        "grant_type" => "refresh_token"
       }
+      
+      options = headers.map{ |k, v| "#{k}=#{v}" }.join('&')
+      url = "https://www.googleapis.com/oauth2/v3/token?#{options}"
 
-      response = RestClient.post "https://developers.google.com/oauthplayground/refreshAccessToken", headers.to_json, content_type: :json
+      response = RestClient.post url, {}
 
       @token = JSON.parse(response)["access_token"]
-    rescue
-      raise RubyPicasa::PicasaTokenError, 'The request to upgrade to a session token failed.'
-    end
+    # rescue
+    #   raise RubyPicasa::PicasaTokenError, 'The request to upgrade to a session token failed.'
+    # end
 
-    @token
+    # @token
   end
 
   # Retrieve a RubyPicasa::User record including all user albums.
