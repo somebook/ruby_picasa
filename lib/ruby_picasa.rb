@@ -283,9 +283,7 @@ class Picasa
                       term='http://schemas.google.com/photos/2007#album'></category>
                   </entry>"
     
-    url = "http://picasaweb.google.com/data/feed/api/user/#{self.user.user}"
-    uri = URI.parse(url)
-    http = Net::HTTP.new(uri.host, uri.port)
+    url = "https://picasaweb.google.com/data/feed/api/user/#{self.user.user}"
   
     headers = {   
       "Content-Type" => "application/atom+xml",    
@@ -293,12 +291,11 @@ class Picasa
       "Authorization" => "Bearer #{token}"
     }
 
-    response = http.post(uri.path, createAlbumRequestXml, headers)
-    
-    ap response
-    
-    if response.class == Net::HTTPCreated
-      return (Objectify::Xml.first_element(response.body) > 'id').children[0].content.match(/albumid\/(\d*)/)[1]
+    response = RestClient.post url, createAlbumRequestXml, headers
+        
+    if [200, 201].include? response.code
+      xml = (Objectify::Xml.first_element(response) > 'id')
+      return xml.children[0].content.match(/albumid\/(\d*)/)[1]
     else
       return nil
     end
@@ -328,11 +325,7 @@ class Picasa
                       term='http://schemas.google.com/photos/2007#album'></category>
                   </entry>"
     
-    url = "http://picasaweb.google.com/data/entry/api/user/#{self.user.user}/albumid/#{album_id}"
-    ap url
-    ap updateAlbumRequestXml
-    uri = URI.parse(url)
-    http = Net::HTTP.new(uri.host, uri.port)
+    url = "https://picasaweb.google.com/data/entry/api/user/#{self.user.user}/albumid/#{album_id}"
   
     headers = {
       "Content-Type" => "application/atom+xml",       
@@ -341,20 +334,23 @@ class Picasa
       "If-Match" => "*"
     }
 
+    uri = URI.parse(url)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+
     response = http.put(uri.path, updateAlbumRequestXml, headers)
-    ap response
-    if response.code == 200
-      return true
-    else
-      return false
-    end
+
+    return true if [200, 201].include? response.code
+
+    return false
   end
   
   def delete_album(album_id)
-    url = "http://picasaweb.google.com/data/entry/api/user/#{self.user.user}/albumid/#{album_id}"
+    url = "https://picasaweb.google.com/data/entry/api/user/#{self.user.user}/albumid/#{album_id}"
     
     uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
     
     headers = {
       "Authorization" => "Bearer #{token}",
@@ -383,13 +379,14 @@ class Picasa
       # Or throw an exception in next update
     end
     if(album_id != "")
-      url = "http://picasaweb.google.com/data/feed/api/user/#{self.user.user}/albumid/#{album_id}"
+      url = "https://picasaweb.google.com/data/feed/api/user/#{self.user.user}/albumid/#{album_id}"
     else
-      url = "http://picasaweb.google.com/data/feed/api/user/#{self.user.user}/album/#{album_name}"
+      url = "https://picasaweb.google.com/data/feed/api/user/#{self.user.user}/album/#{album_name}"
     end
 
     uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
 
     headers = {
       "Content-Type" => "image/jpeg", 
@@ -418,10 +415,11 @@ class Picasa
     photo_id = options[:photo_id] == nil ? "" : options[:photo_id]
     album_id = options[:album_id] == nil ? "" : options[:album_id]
     
-    url = "http://picasaweb.google.com/data/entry/api/user/#{self.user.user}/albumid/#{album_id}/photoid/#{photo_id}"
+    url = "https://picasaweb.google.com/data/entry/api/user/#{self.user.user}/albumid/#{album_id}/photoid/#{photo_id}"
     
     uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
     
     headers = {
       "Authorization" => "Bearer #{token}",
